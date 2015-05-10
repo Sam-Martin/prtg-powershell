@@ -60,5 +60,10 @@ Describe "PSPRTG" {
     It "Remove-PRTGObject Works"{
         Remove-PRTGObject -ObjectId $CopiedObject.objid | Should Be $true
     }
+
+    It "Get-PRTGObjectStatus Works"{
+        $result = Get-PRTGObjectStatus -ObjectId $CopiedObject.objid
+        $result.status_raw -gt 0 | Should Be $true
+    }
    
 } 

@@ -287,3 +287,64 @@ function Set-PRTGObjectProperty{
     
 
 }
+
+function Get-PRTGObjectProperty{
+    param(
+        # ID of the object to pause/resume
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
+        [int]$ObjectId,
+        
+        # Name of the object's property to get
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PropertyName
+    )
+    #https://prtg.sdlproducts.com/api/getobjectstatus.htm?id=18425&name=status
+    $body =  @{
+        id=$ObjectId;
+        name=$PropertyName;
+        username=$global:PRTGUsername;
+        passhash=$global:PRTGPassHash;
+    }
+
+    $Result = ([xml](Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/getobjectstatus.htm" -Method Get -Body $Body)).prtg.result
+    return $result
+    
+}
+
+Function Get-PRTGObjectStatus{
+    param(
+        # ID of the object to pause/resume
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
+        [int]$ObjectId
+    )
+
+    $StatusMapping = @{
+        1="Unknown" 
+        2="Scanning"
+        3="Up"
+        4="Warning"
+        5="Down"
+        6="No Probe"
+        7="Paused by User"
+        8="Paused by Dependency"
+        9="Paused by Schedule"
+        10="Unusual"
+        11="Not Licensed" 
+        12="Paused Until"
+    }
+
+    try{
+        $statusID = (Get-PRTGObjectProperty -ObjectId $ObjectId -PropertyName 'status' -ErrorAction Stop)
+    }catch{
+        Write-Error "Unable to get object status`r`n$($_.exception.message)";
+        return $false;
+    }
+    $result = @{'objid'=$ObjectId;"status"=$StatusMapping[[int]$statusID];"status_raw"=$statusID}
+    return $result
+}
+    

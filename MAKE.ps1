@@ -65,7 +65,7 @@ $PackageFilePatternExclusions = @(
 
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$Version = "0.0.2"
+$Version = "0.0.3"
 $ModuleName = "PSPRTG"
 $PackageName = "$ModuleName-v$($version).zip";
 

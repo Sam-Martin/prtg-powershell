@@ -37,6 +37,8 @@ Set-PRTGObjectProperty -PropertyName "host" -PropertyValue "MyServer.test.com" -
 * Get-PRTGDeviceByHostname
 * Get-PRTGDevices
 * Get-PRTGGroups
+* Get-PRTGObjectProperty
+* Get-PRTGObjectStatus
 * Get-PRTGTable
 * Remove-PRTGObject
 * Set-PRTGCredentials
