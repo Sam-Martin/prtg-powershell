@@ -12,7 +12,7 @@
 RootModule = 'PSPRTG.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.0.2'
+ModuleVersion = '0.0.3'
 
 # ID used to uniquely identify this module
 GUID = '2d3828c5-6d02-44ed-b56b-a99228628ef0'

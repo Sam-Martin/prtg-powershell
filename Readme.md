@@ -1,5 +1,5 @@
 # PSPRTG  
-[![GitHub release](https://img.shields.io/github/release/Sam-Martin/prtg-powershell.svg)](https://github.com/Sam-Martin/prtg-powershell/releases/latest) [![GitHub license](https://img.shields.io/github/license/Sam-Martin/prtg-powershell.svg)](LICENSE) ![Test Coverage](https://img.shields.io/badge/coverage-79%25-yellowgreen.svg)  
+[![GitHub release](https://img.shields.io/github/release/Sam-Martin/prtg-powershell.svg)](https://github.com/Sam-Martin/prtg-powershell/releases/latest) [![GitHub license](https://img.shields.io/github/license/Sam-Martin/prtg-powershell.svg)](LICENSE) ![Test Coverage](https://img.shields.io/badge/coverage-81%25-yellowgreen.svg)  
 This PowerShell module provides a series of cmdlets for interacting with the [PRTG API](https://prtg.paessler.com/api.htm?username=demo&password=demodemo&tabid=1), performed by wrapping `Invoke-WebRequest` for the API calls.  
 **IMPORTANT:** Neither this module, nor its creator are in any way affiliated with PRTG, or Paessler AG.
 
