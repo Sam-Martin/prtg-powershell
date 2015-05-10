@@ -44,12 +44,17 @@ Describe "PSPRTG" {
         $CopiedObject.name | Should Be "Test2100"
     }
 
+    It "Set-PRTGObjectProperty Works"{
+        $result = Set-PRTGObjectPRoperty -ObjectId $CopiedObject.objid -PropertyName 'host' -PropertyValue "test.fullyqualified.domain.name";
+        $result | Should Be $true
+    }
+
     It "Set-PRTGObjectUnpaused Works"{
-        Set-PRTGObjectUnpaused -objectID $Device.objid | SHould Be $True
+        Set-PRTGObjectUnpaused -objectID $CopiedObject.objid | Should Be $True
     }
 
     It "Set-PRTGObjectPaused Works"{
-        Set-PRTGObjectPaused -objectID $Device.objid -PauseLength 5 | SHould Be $True
+        Set-PRTGObjectPaused -objectID $CopiedObject.objid -PauseLength 5 | SHould Be $True
     }
 
     It "Remove-PRTGObject Works"{

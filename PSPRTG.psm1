@@ -117,6 +117,7 @@ Function Copy-PRTGObject {
         # ID of the object to copy
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
         
         # ID of the target parent object
@@ -166,6 +167,7 @@ function Remove-PRTGObject{
         # ID of the object to delete
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
         [int]$ObjectId
     )
 
@@ -197,6 +199,7 @@ function Set-PRTGObjectPaused{
         # ID of the object to pause/resume
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
         
         # Length of time in minutes to pause the object, $null for indefinite
@@ -229,6 +232,7 @@ function Set-PRTGObjectUnpaused{
         # ID of the object to pause/resume
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
         [int]$ObjectId
     )
     
@@ -245,4 +249,41 @@ function Set-PRTGObjectUnpaused{
     }else{
         return $result
     }
+}
+
+function Set-PRTGObjectProperty{
+     param(
+        # ID of the object to pause/resume
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidateScript({$_ -gt 0})]
+        [int]$ObjectId,
+        
+        # Name of the object's property to set
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PropertyName,
+
+        # Value to which to set the property of the object
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PropertyValue
+    )
+    
+    $body =  @{
+        id=$ObjectId;
+        name=$PropertyName;
+        value=$PropertyValue;
+        username=$global:PRTGUsername;
+        passhash=$global:PRTGPassHash;
+    }
+
+    $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/setobjectproperty.htm" -Method Get -Body $Body)
+    if($Result.StatusCode -eq 200){
+        return $true
+    }else{
+        return $result
+    }
+    
+
 }
