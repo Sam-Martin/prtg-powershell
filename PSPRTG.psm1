@@ -27,7 +27,10 @@ function Get-PRTGTable{
         [string]$SortBy="objid",
         [ValidateSet("Desc","Asc")]
         [string]$SortDirection="Desc",
-        [hashtable]$Filters
+        [hashtable]$Filters,
+		# Added 20170628 JRW
+		# Allows you to optionally set Parent Object of table query
+		[string]$objectParentID
     )
 
     $SortDirectionPRTGStyle = if($SortDirection -eq "Desc"){"-"}else{''}
@@ -41,6 +44,12 @@ function Get-PRTGTable{
         username=$global:PRTGUsername;
         passhash=$global:PRTGPassHash;
     }
+	
+	# Added 20170628 JRW
+	# If Parent Object provided, add to body hastable for query
+	IF(![string]::IsNullOrEmpty($objectParentID)) {            
+        $body.Add("id",$objectParentID)
+    } 
 
     foreach($FilterName in $Filters.keys){
         $body.Add($FilterName,$Filters.$FilterName)
