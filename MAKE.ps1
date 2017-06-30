@@ -63,7 +63,7 @@ $PackageFilePatternExclusions = @(
     ".+\.Pester.Defaults.json"
 )
 
-$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$here = "$(Split-Path -Parent $MyInvocation.MyCommand.Path)\PSPRTG"
 
 $Version = "0.0.3"
 $ModuleName = "PSPRTG"
