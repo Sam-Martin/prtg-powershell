@@ -70,7 +70,7 @@ $ModuleName = "PSPRTG"
 $PackageName = "$ModuleName-v$($version).zip";
 
 # Perform Pester tests
-$TestResult = Invoke-Pester -CodeCoverage '*.psm1' -PassThru
+$TestResult = Invoke-Pester .\Tests -CodeCoverage '*.psm1' -PassThru
 $CoveragePercent = 100-(($testResult.CodeCoverage.NumberOfCommandsMissed/$testResult.CodeCoverage.NumberOfCommandsAnalyzed)*100)
 
 # Update/Create the package and 

@@ -66,16 +66,16 @@ Description = 'PS Module that allows you to interact with PRTGs API'
 # NestedModules = @()
 
 # Functions to export from this module
-FunctionsToExport = '*'
+FunctionsToExport = 'Copy-PRTGObject','Get-PRTGDeviceByHostname','Get-PRTGDevices','Get-PRTGGroups','Get-PRTGObjectProperty','Get-PRTGObjectStatus','Get-PRTGTable','Remove-PRTGObject','Set-PRTGCredentials','Set-PRTGObjectPaused','Set-PRTGObjectProperty','Set-PRTGObjectUnpaused'
 
 # Cmdlets to export from this module
-CmdletsToExport = '*'
+#CmdletsToExport = '*'
 
 # Variables to export from this module
 VariablesToExport = '*'
 
 # Aliases to export from this module
-AliasesToExport = '*'
+#AliasesToExport = '*'
 
 # List of all modules packaged with this module
 # ModuleList = @()

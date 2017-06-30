@@ -1,4 +1,5 @@
 ﻿function Set-PRTGCredentials{
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -13,10 +14,12 @@
         [string]$PassHash
     )
 
-    $Global:PRTGURL = "https://$prtgURL";
-    $Global:PRTGUserName = $Username
-    $Global:PRTGPassHash = $PassHash
-    return $true
+    if ($pscmdlet.ShouldProcess($env:COMPUTERNAME)){
+        $Global:PRTGURL = "https://$prtgURL";
+        $Global:PRTGUserName = $Username
+        $Global:PRTGPassHash = $PassHash
+        return $true
+    }
 }
 
 function Get-PRTGTable{
@@ -47,7 +50,7 @@ function Get-PRTGTable{
 	
 	# Added 20170628 JRW
 	# If Parent Object provided, add to body hastable for query
-	IF(![string]::IsNullOrEmpty($objectParentID)) {            
+	if (![string]::IsNullOrEmpty($objectParentID)) {            
         $body.Add("id",$objectParentID)
     } 
 
@@ -99,13 +102,13 @@ function Get-PRTGDeviceByHostname{
         Write-Warning "Unable to get the FQDN for $hostname, match likelihood reduced";
     }
     try{
-        $ipAddress = [System.Net.Dns]::GetHostAddresses($fqdn) | ?{$_.addressFamily -eq "InterNetwork"}; # Where IP address is ipv4
+        $ipAddress = [System.Net.Dns]::GetHostAddresses($fqdn) | Where-Object {$_.addressFamily -eq "InterNetwork"}; # Where IP address is ipv4
     }catch{
         Write-Warning "Unable to get the IP for $hostname, match likelihood reduced";
     }
 
     # Search for a PRTG device that matches either the hostname, the IP, or the FQDN
-    $nameSearch = $prtgDeviceTree.devices.item | ?{
+    $nameSearch = $prtgDeviceTree.devices.item | Where-Object {
         $_.host -like $hostname -or 
         $_.host -eq $ipAddress -or 
         $_.host -like $fqdn
@@ -166,12 +169,13 @@ Function Copy-PRTGObject {
     }
 
     # Fetch the ID of the object we just added
-    $result = (Get-PRTGTable -numResults 100 -columns "objid,name" -SortBy "objid" -content $TypePlural -Filters @{"filter_name"=$Name}).$TypePlural.item | Sort-Object objid | select -First 1
+    $result = (Get-PRTGTable -numResults 100 -columns "objid,name" -SortBy "objid" -content $TypePlural -Filters @{"filter_name"=$Name}).$TypePlural.item | Sort-Object objid | Select-Object -First 1
 
     return $result
 }
 
 function Remove-PRTGObject{
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         # ID of the object to delete
         [Parameter(Mandatory=$true)]
@@ -187,23 +191,26 @@ function Remove-PRTGObject{
         passhash=$global:PRTGPassHash;
     }
     
-    # Try to clone the object
-    try{
-        $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/deleteobject.htm " -Method Get -Body $Body)
-    }catch{
-        Write-Error "Failed to delete object $($_.exception.message)";
-        return $false;
+    if ($Pscmdlet.ShouldProcess($ObjectId)) {
+    
+        # Try to clone the object
+        try{
+            $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/deleteobject.htm " -Method Get -Body $Body)
+        }catch{
+            Write-Error "Failed to delete object $($_.exception.message)";
+            return $false;
+        }
+        if($Result.StatusCode -eq 200){
+            return $true
+        }else{
+            Write-Error "Failed to delete object";
+            return $Result.Content
+        }
     }
-    if($Result.StatusCode -eq 200){
-        return $true
-    }else{
-        Write-Error "Failed to delete object";
-        return $Result.Content
-    }
-
 }
 
 function Set-PRTGObjectPaused{
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         # ID of the object to pause/resume
         [Parameter(Mandatory=$true)]
@@ -227,16 +234,20 @@ function Set-PRTGObjectPaused{
         passhash=$global:PRTGPassHash;
     }
 
-    if($PauseLength){
-        $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pauseobjectfor.htm" -Method Get -Body $Body)
-    }else{
-        $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pause.htm" -Method Get -Body $Body)
-    }
+    if ($Pscmdlet.ShouldProcess($ObjectId)) {
+    
+        if($PauseLength){
+            $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pauseobjectfor.htm" -Method Get -Body $Body)
+        }else{
+            $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pause.htm" -Method Get -Body $Body)
+        }
 
-    return $result
+        return $result
+    }
 }
 
 function Set-PRTGObjectUnpaused{
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         # ID of the object to pause/resume
         [Parameter(Mandatory=$true)]
@@ -252,16 +263,20 @@ function Set-PRTGObjectUnpaused{
         passhash=$global:PRTGPassHash;
     }
 
-    $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pause.htm" -Method Get -Body $Body)
-    if($Result.StatusCode -eq 200){
-        return $true
-    }else{
-        return $result
+    if ($Pscmdlet.ShouldProcess($ObjectId)) {
+    
+        $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pause.htm" -Method Get -Body $Body)
+        if($Result.StatusCode -eq 200){
+            return $true
+        }else{
+            return $result
+        }
     }
 }
 
 function Set-PRTGObjectProperty{
-     param(
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
         # ID of the object to pause/resume
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -287,14 +302,15 @@ function Set-PRTGObjectProperty{
         passhash=$global:PRTGPassHash;
     }
 
-    $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/setobjectproperty.htm" -Method Get -Body $Body)
-    if($Result.StatusCode -eq 200){
-        return $true
-    }else{
-        return $result
-    }
+    if ($Pscmdlet.ShouldProcess($ObjectId)) {
     
-
+        $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/setobjectproperty.htm" -Method Get -Body $Body)
+        if($Result.StatusCode -eq 200){
+            return $true
+        }else{
+            return $result
+        }
+    }
 }
 
 function Get-PRTGObjectProperty{
