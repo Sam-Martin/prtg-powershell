@@ -1,36 +1,44 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ModuleRoot = "$here\.."
+$ModuleRoot = "$here\..\PSPRTG"
 $DefaultsFile = "$here\PSPRTG.Pester.Defaults.json"
 
-Write-Host $here
-
-# Load defaults from file (merging into $global:LeanKitPesterTestDefaults
-if(Test-Path $DefaultsFile){
-    $defaults = if($global:PRTGPesterDefaults){$global:PRTGPesterDefaults}else{@{}};
-    (Get-Content $DefaultsFile | Out-String | ConvertFrom-Json).psobject.properties | %{$defaults."$($_.Name)" = $_.Value}
+If (-not $env:CI) {
+    # Load defaults from file (merging into $global:LeanKitPesterTestDefaults
+    if(Test-Path $DefaultsFile){
+        $defaults = if($global:PRTGPesterDefaults){$global:PRTGPesterDefaults}else{@{}};
+        (Get-Content $DefaultsFile | Out-String | ConvertFrom-Json).psobject.properties | %{$defaults."$($_.Name)" = $_.Value}
     
-    # Prompt for credentials
-    If (-not $env:CI) {
+        # Prompt for credentials
         $defaults.PasswordHash = if($defaults.PasswordHash){$defaults.PasswordHash}else{Read-Host "PasswordHash"}
-    }
-    $global:PRTGPesterDefaults = $defaults
-}else{
-    Write-Error "$DefaultsFile does not exist. Created example file. Please populate with your values";
     
-    # Write example file
-    @{
-        prtgURL = 'yourprtgurl.com';
-        Username = "yourprtgusername";
-        Hostname = "myserver";
-        TestGroupID = 33948;
+        $global:PRTGPesterDefaults = $defaults
+    }else{
+        Write-Error "$DefaultsFile does not exist. Created example file. Please populate with your values";
+    
+        # Write example file
+        @{
+            prtgURL = 'yourprtgurl.com';
+            Username = "yourprtgusername";
+            Hostname = "myserver";
+            TestGroupID = 33948;
 
-    } | ConvertTo-Json | Set-Content $DefaultsFile
-    return;
+        } | ConvertTo-Json | Set-Content $DefaultsFile
+        return;
+    }
 }
+    
 
 Remove-Module PSPRTG -ErrorAction SilentlyContinue
-Import-Module $ModuleRoot\PSPRTG.psd1
-    
+
+Describe 'Module Tests' {
+
+    It "Module PSPRTG imports cleanly" {
+        {Import-Module $ModuleRoot\PSPRTG.psd1 -Force } | Should Not Throw
+    }
+
+}
+  
+Import-Module $ModuleRoot\PSPRTG.psd1 -Force
 
 Describe "PSPRTG" -tag 'Integration' {
     
