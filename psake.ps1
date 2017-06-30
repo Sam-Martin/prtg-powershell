@@ -75,14 +75,13 @@ Task Deploy -Depends Build {
     }
     "New Version: $NewVersion"
 
-    #$FunctionList = @((Get-ChildItem -Path .\$Env:BHProjectName\Public).BaseName)
+    $FunctionList = @((Get-Module $ManifestPath -ListAvailable).ExportedCommands.Values.Name)
 
-    Update-ModuleManifest -Path $ManifestPath -ModuleVersion $NewVersion #-FunctionsToExport $functionList
+    Update-ModuleManifest -Path $ManifestPath -ModuleVersion $NewVersion -FunctionsToExport $functionList
     (Get-Content -Path $ManifestPath) -replace "PSGet_$Env:BHProjectName", "$Env:BHProjectName" | Set-Content -Path $ManifestPath
     (Get-Content -Path $ManifestPath) -replace 'NewManifest', "$Env:BHProjectName" | Set-Content -Path $ManifestPath
-    
-    #(Get-Content -Path $ManifestPath) -replace 'FunctionsToExport = ', 'FunctionsToExport = @(' | Set-Content -Path $ManifestPath -Force
-    #(Get-Content -Path $ManifestPath) -replace "$($FunctionList[-1])'", "$($FunctionList[-1])')" | Set-Content -Path $ManifestPath -Force
+    (Get-Content -Path $ManifestPath) -replace 'FunctionsToExport = ', 'FunctionsToExport = @(' | Set-Content -Path $ManifestPath -Force
+    (Get-Content -Path $ManifestPath) -replace "$($FunctionList[-1])'", "$($FunctionList[-1])')" | Set-Content -Path $ManifestPath -Force
 
     $Params = @{
         Path = $ProjectRoot
