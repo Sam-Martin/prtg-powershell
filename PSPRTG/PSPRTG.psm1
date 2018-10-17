@@ -47,17 +47,17 @@ function Get-PRTGTable{
         username=$global:PRTGUsername;
         passhash=$global:PRTGPassHash;
     }
-	
+
 	# Added 20170628 JRW
 	# If Parent Object provided, add to body hastable for query
-	if (![string]::IsNullOrEmpty($objectParentID)) {            
+	if (![string]::IsNullOrEmpty($objectParentID)) {
         $body.Add("id",$objectParentID)
-    } 
+    }
 
     foreach($FilterName in $Filters.keys){
         $body.Add($FilterName,$Filters.$FilterName)
     }
-    
+
     # Try to get the PRTG device tree
     try{
         $prtgDeviceTree = [xml](Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/table.xml" -Method Get -Body $Body)
@@ -69,7 +69,7 @@ function Get-PRTGTable{
 }
 
 function Get-PRTGGroups{
-    
+
     return Get-PRTGTable -content "groups" -columns "objid,probe,group,name,downsens,partialdownsens,downacksens,upsens,warnsens,pausedsens,unusualsens"
 }
 
@@ -81,10 +81,10 @@ function Get-PRTGDeviceByHostname{
     param(
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
-        [string]$hostname = $env:computername
+        [string]$hostname
     )
 
-    
+
     # Try to get the PRTG device tree
     try{
         $prtgDeviceTree = Get-PRTGTable -content "devices";
@@ -92,7 +92,7 @@ function Get-PRTGDeviceByHostname{
         Write-Error "Failed to get PRTG Device tree $($_.exception.message)";
         return $false;
     }
-    
+
     $fqdn = $null;
     $ipAddress = $null;
 
@@ -109,13 +109,13 @@ function Get-PRTGDeviceByHostname{
 
     # Search for a PRTG device that matches either the hostname, the IP, or the FQDN
     $nameSearch = $prtgDeviceTree.devices.item | Where-Object {
-        $_.host -like $hostname -or 
-        $_.host -eq $ipAddress -or 
+        $_.host -like $hostname -or
+        $_.host -eq $ipAddress -or
         $_.host -like $fqdn
     }
 
     if(($nameSearch|Measure-Object).Count -eq 1){
-    
+
         Write-Verbose "Found PRTG device #$($nameSearch.objid) - $($nameSearch.device)";
 
         return $nameSearch
@@ -131,7 +131,7 @@ Function Copy-PRTGObject {
         [ValidateNotNullOrEmpty()]
         [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
-        
+
         # ID of the target parent object
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -141,7 +141,7 @@ Function Copy-PRTGObject {
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
         [string]$Name,
-        
+
         # Type of the object to copy
         [Parameter(Mandatory=$true)]
         [ValidateSet("sensor","group","device")]
@@ -159,7 +159,7 @@ Function Copy-PRTGObject {
 
     # Pluralise the type
     $TypePlural = $Type+'s';
-    
+
     # Try to clone the object
     try{
         $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/duplicateobject.htm" -Method Get -Body $Body)
@@ -190,9 +190,9 @@ function Remove-PRTGObject{
         username=$global:PRTGUsername;
         passhash=$global:PRTGPassHash;
     }
-    
+
     if ($Pscmdlet.ShouldProcess($ObjectId)) {
-    
+
         # Try to clone the object
         try{
             $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/deleteobject.htm " -Method Get -Body $Body)
@@ -217,14 +217,14 @@ function Set-PRTGObjectPaused{
         [ValidateNotNullOrEmpty()]
         [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
-        
+
         # Length of time in minutes to pause the object, $null for indefinite
         [int]$PauseLength=$null,
-        
+
         # Message to associate with the pause event
         [string]$PauseMessage="Paused by PSPRTG"
     )
-    
+
     $body =  @{
         id=$ObjectId;
         pausemsg=$PauseMessage;
@@ -235,7 +235,7 @@ function Set-PRTGObjectPaused{
     }
 
     if ($Pscmdlet.ShouldProcess($ObjectId)) {
-    
+
         if($PauseLength){
             $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pauseobjectfor.htm" -Method Get -Body $Body)
         }else{
@@ -255,7 +255,7 @@ function Set-PRTGObjectUnpaused{
         [ValidateScript({$_ -gt 0})]
         [int]$ObjectId
     )
-    
+
     $body =  @{
         id=$ObjectId;
         action=1;
@@ -264,7 +264,7 @@ function Set-PRTGObjectUnpaused{
     }
 
     if ($Pscmdlet.ShouldProcess($ObjectId)) {
-    
+
         $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/pause.htm" -Method Get -Body $Body)
         if($Result.StatusCode -eq 200){
             return $true
@@ -282,7 +282,7 @@ function Set-PRTGObjectProperty{
         [ValidateNotNullOrEmpty()]
         [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
-        
+
         # Name of the object's property to set
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -293,7 +293,7 @@ function Set-PRTGObjectProperty{
         [ValidateNotNullOrEmpty()]
         [string]$PropertyValue
     )
-    
+
     $body =  @{
         id=$ObjectId;
         name=$PropertyName;
@@ -303,7 +303,7 @@ function Set-PRTGObjectProperty{
     }
 
     if ($Pscmdlet.ShouldProcess($ObjectId)) {
-    
+
         $Result =(Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/setobjectproperty.htm" -Method Get -Body $Body)
         if($Result.StatusCode -eq 200){
             return $true
@@ -320,7 +320,7 @@ function Get-PRTGObjectProperty{
         [ValidateNotNullOrEmpty()]
         [ValidateScript({$_ -gt 0})]
         [int]$ObjectId,
-        
+
         # Name of the object's property to get
         [Parameter(Mandatory=$true)]
         [ValidateNotNullOrEmpty()]
@@ -336,7 +336,7 @@ function Get-PRTGObjectProperty{
 
     $Result = ([xml](Invoke-WebRequest -UseBasicParsing -Uri "$prtgURL/api/getobjectstatus.htm" -Method Get -Body $Body)).prtg.result
     return $result
-    
+
 }
 
 Function Get-PRTGObjectStatus{
@@ -349,7 +349,7 @@ Function Get-PRTGObjectStatus{
     )
 
     $StatusMapping = @{
-        1="Unknown" 
+        1="Unknown"
         2="Scanning"
         3="Up"
         4="Warning"
@@ -359,7 +359,7 @@ Function Get-PRTGObjectStatus{
         8="Paused by Dependency"
         9="Paused by Schedule"
         10="Unusual"
-        11="Not Licensed" 
+        11="Not Licensed"
         12="Paused Until"
     }
 
@@ -372,4 +372,3 @@ Function Get-PRTGObjectStatus{
     $result = @{'objid'=$ObjectId;"status"=$StatusMapping[[int]$statusID];"status_raw"=$statusID}
     return $result
 }
-    

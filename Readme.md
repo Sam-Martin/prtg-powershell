@@ -7,7 +7,14 @@ This PowerShell module provides a series of cmdlets for interacting with the [PR
 Requires PowerShell 3.0 or above as this is when `Invoke-WebRequest` was introduced.
 
 ## Usage
-Download the [latest release](https://github.com/Sam-Martin/prtg-powershell/releases/latest) and  extract the .psm1 and .psd1 files to your PowerShell profile directory (i.e. the `Modules` directory under wherever `$profile` points to in your PS console) and run:  
+
+This module is published to the PowerShell Gallery, so can be installed via:
+
+```
+Install-Module PSPRTG -Scope CurrentUser
+```
+
+Alternatively you can download the [latest release](https://github.com/Sam-Martin/prtg-powershell/releases/latest) and  extract the .psm1 and .psd1 files to your PowerShell profile directory (i.e. the `Modules` directory under wherever `$profile` points to in your PS console) and run:  
 `Import-Module PSPRTG`  
 Once you've done this, all the cmdlets will be at your disposal, you can see a full list using `Get-Command -Module PSPRTG`.
 
